@@ -25,11 +25,3 @@ def patch_split_overlap(x: Tensor, patch_size: int) -> Tensor:
     x = x.reshape(B, num_patches, patch_size)
     return x
 
-
-# x = torch.randn(2, 16)
-# model = patch_split_overlap(x, 4)
-# attn = Attention(
-#     dim=4, causal=True, dim_head=2, heads=2, num_null_kv=1,
-# )
-# attended = attn(x=model)
-# print(attended)

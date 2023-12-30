@@ -4,10 +4,47 @@ from zeta.nn import SimpleFeedForward
 from ast_torch.attention import Attention
 from ast_torch.blocks import patch_split_overlap
 
-# from zeta.nn.embeddings.positional import PositionalEmbedding
-
 
 class ASTransformer(nn.Module):
+    """
+    ASTransformer is a transformer-based model for AST (Abstract Syntax Tree) processing.
+
+    Args:
+        dim (int): The dimension of the input and output tensors.
+        dim_head (int): The dimension of each attention head.
+        heads (int): The number of attention heads.
+        depth (int): The number of transformer layers.
+        dropout (float, optional): The dropout rate. Defaults to 0.1.
+        ff_mult (int, optional): The expansion ratio for the feed-forward network. Defaults to 4.
+        causal (bool, optional): Whether to use causal attention. Defaults to False.
+        num_null_kv (int, optional): The number of null key-value pairs. Defaults to 0.
+        patch_size (int, optional): The patch size for patching the input. Defaults to 1.
+        norm_context (bool, optional): Whether to normalize the context. Defaults to False.
+        flash (bool, optional): Whether to use FLASH attention. Defaults to False.
+
+    Attributes:
+        dim (int): The dimension of the input and output tensors.
+        dim_head (int): The dimension of each attention head.
+        heads (int): The number of attention heads.
+        depth (int): The number of transformer layers.
+        dropout (float): The dropout rate.
+        ff_mult (int): The expansion ratio for the feed-forward network.
+        causal (bool): Whether to use causal attention.
+        num_null_kv (int): The number of null key-value pairs.
+        patch_size (int): The patch size for patching the input.
+        norm_context (bool): Whether to normalize the context.
+        flash (bool): Whether to use FLASH attention.
+        to_patch (nn.Linear): Linear layer for patching the input.
+        to_out (nn.Linear): Linear layer for projecting the output.
+        to_1d_embeddings (nn.Linear): Linear layer for 1D embeddings.
+        ff_expansion_ration (int): Expansion ratio for the feed-forward network.
+        attn (Attention): Attention module.
+        ffn (SimpleFeedForward): Feed-forward network module.
+        attn_layers (nn.ModuleList): List of attention layers.
+        ffn_layers (nn.ModuleList): List of feed-forward network layers.
+
+    """
+
     def __init__(
         self,
         dim: int,
@@ -82,6 +119,17 @@ class ASTransformer(nn.Module):
             )
 
     def forward(self, x: Tensor, mask: Tensor = None) -> Tensor:
+        """
+        Forward pass of the ASTransformer.
+
+        Args:
+            x (Tensor): The input tensor.
+            mask (Tensor, optional): The mask tensor. Defaults to None.
+
+        Returns:
+            Tensor: The output tensor.
+
+        """
         # Patching then embedding
         x = patch_split_overlap(x, self.patch_size)
         x = self.to_1d_embeddings(x)

@@ -7,6 +7,7 @@ Implementation of AST from the paper: "AST: Audio Spectrogram Transformer' in Py
 `pip3 install ast-torch`
 
 ## Usage
+
 ```python
 import torch
 from ast_torch.model import ASTransformer
