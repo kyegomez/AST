@@ -3,7 +3,7 @@ from zeta.nn import SimpleFeedForward
 
 from ast_torch.attention import Attention
 from ast_torch.blocks import patch_split_overlap
-
+from zeta.nn import PositionalEmbedding
 
 class ASTransformer(nn.Module):
     """
@@ -48,6 +48,7 @@ class ASTransformer(nn.Module):
     def __init__(
         self,
         dim: int,
+        seqlen: int,
         dim_head: int,
         heads: int,
         depth: int,
@@ -63,6 +64,7 @@ class ASTransformer(nn.Module):
     ):
         super().__init__()
         self.dim = dim
+        self.seqlen = seqlen
         self.dim_head = dim_head
         self.heads = heads
         self.depth = depth
@@ -75,7 +77,8 @@ class ASTransformer(nn.Module):
         self.flash = flash
 
         self.to_patch = nn.Linear(dim, dim_head * heads, bias=False)
-        self.to_out = nn.Linear(dim_head * heads, dim, bias=False)
+        # self.to_out = nn.Linear(dim_head * heads, dim, bias=False)
+        self.to_out = nn.Linear(dim, dim, bias=False)
         self.to_1d_embeddings = nn.Linear(dim, dim)
         self.ff_expansion_ration = dim * ff_mult
         self.attn = Attention(
@@ -117,7 +120,10 @@ class ASTransformer(nn.Module):
                     dropout=dropout,
                 )
             )
-
+            
+        self.pos_emb =  PositionalEmbedding(seqlen, dim)
+        
+        
     def forward(self, x: Tensor, mask: Tensor = None) -> Tensor:
         """
         Forward pass of the ASTransformer.
@@ -133,6 +139,7 @@ class ASTransformer(nn.Module):
         # Patching then embedding
         x = patch_split_overlap(x, self.patch_size)
         x = self.to_1d_embeddings(x)
+        x = self.pos_emb(x)
 
         # For i in depth then do attn and ffn
         for attn_block, ffn_block in zip(
@@ -140,5 +147,8 @@ class ASTransformer(nn.Module):
         ):
             x = attn_block(x) + x
             x = ffn_block(x) + x
+            
+        # Projecting to output
+        x = self.to_out(x)
 
         return x
