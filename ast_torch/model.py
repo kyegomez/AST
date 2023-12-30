@@ -1,9 +1,8 @@
 from torch import Tensor, nn
-from zeta.nn import SimpleFeedForward
+from zeta.nn import PositionalEmbedding, SimpleFeedForward
 
 from ast_torch.attention import Attention
 from ast_torch.blocks import patch_split_overlap
-from zeta.nn import PositionalEmbedding
 
 
 class ASTransformer(nn.Module):
@@ -152,4 +151,3 @@ class ASTransformer(nn.Module):
         x = self.to_out(x)
 
         return x
-
