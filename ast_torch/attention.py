@@ -6,7 +6,6 @@ import torch.nn.functional as F
 from einops import rearrange, repeat
 from packaging import version
 from torch import einsum, nn
-from zeta.utils import default
 
 # constants
 
@@ -19,6 +18,10 @@ Config = namedtuple(
 
 def exists(val):
     return val is not None
+
+
+def default(val, d):
+    return val if exists(val) else d
 
 
 def once(fn):

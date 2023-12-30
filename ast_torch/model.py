@@ -1,8 +1,8 @@
-from torch import nn
-from ast.blocks import patch_split_overlap
-from ast.attention import Attention
+from torch import Tensor, nn
 from zeta.nn import SimpleFeedForward
-from torch import Tensor
+
+from ast_torch.attention import Attention
+from ast_torch.blocks import patch_split_overlap
 
 
 class ASTransformer(nn.Module):
@@ -55,8 +55,6 @@ class ASTransformer(nn.Module):
         )
 
     def forward(self, x: Tensor, mask: Tensor = None) -> Tensor:
-        B, C, H, W = x.shape
-        x = x.reshape(B, C, H * W)
         x = patch_split_overlap(x, self.patch_size)
         x = self.to_patch(x)
         x = self.attn(x, mask=mask)
