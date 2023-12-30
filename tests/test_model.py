@@ -1,56 +1,43 @@
-import pytest
 import torch
-from ast_torch.model import ASTransformer
+import pytest
+from ast_torch.model import ASTransformer, SimpleFeedForward
+from ast_torch.attention import Attention
+
 
 @pytest.fixture
 def model():
-    dim = 512
-    seqlen = 100
-    dim_head = 64
-    heads = 8
-    depth = 6
-    dropout = 0.1
-    ff_mult = 4
-    causal = False
-    num_null_kv = 0
-    patch_size = 1
-    norm_context = False
-    flash = False
     return ASTransformer(
-        dim=dim,
-        seqlen=seqlen,
-        dim_head=dim_head,
-        heads=heads,
-        depth=depth,
-        dropout=dropout,
-        ff_mult=ff_mult,
-        causal=causal,
-        num_null_kv=num_null_kv,
-        patch_size=patch_size,
-        norm_context=norm_context,
-        flash=flash
+        dim=4, seqlen=16, dim_head=4, heads=4, depth=2, patch_size=4
     )
 
-def test_initialization(model):
-    assert model.dim == 512
-    assert model.seqlen == 100
-    assert model.dim_head == 64
-    assert model.heads == 8
-    assert model.depth == 6
-    assert model.dropout == 0.1
-    assert model.ff_mult == 4
-    assert model.causal == False
-    assert model.num_null_kv == 0
-    assert model.patch_size == 1
-    assert model.norm_context == False
-    assert model.flash == False
 
-def test_forward(model):
-    x = torch.rand(1, model.seqlen, model.dim)
-    output = model(x)
-    assert isinstance(output, torch.Tensor)
+def test_to_patch_layer(model):
+    assert isinstance(model.to_patch, torch.nn.Linear)
+    assert model.to_patch.in_features == model.dim
+    assert model.to_patch.out_features == model.dim_head * model.heads
 
-def test_output_shape(model):
-    x = torch.rand(1, model.seqlen, model.dim)
+
+def test_to_out_layer(model):
+    assert isinstance(model.to_out, torch.nn.Linear)
+    assert model.to_out.in_features == model.dim
+    assert model.to_out.out_features == model.dim
+
+
+def test_attention_layers(model):
+    assert isinstance(model.attn_layers, torch.nn.ModuleList)
+    assert len(model.attn_layers) == model.depth
+    for layer in model.attn_layers:
+        assert isinstance(layer, Attention)
+
+
+def test_feed_forward_layers(model):
+    assert isinstance(model.ffn_layers, torch.nn.ModuleList)
+    assert len(model.ffn_layers) == model.depth
+    for layer in model.ffn_layers:
+        assert isinstance(layer, SimpleFeedForward)
+
+
+def test_forward_output(model):
+    x = torch.randn(1, 16)
     output = model(x)
-    assert output.shape == (1, model.seqlen, model.dim)
+    assert output.shape == (1, model.dim)

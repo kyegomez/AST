@@ -24,4 +24,3 @@ def patch_split_overlap(x: Tensor, patch_size: int) -> Tensor:
     x = x[:, : num_patches * patch_size]
     x = x.reshape(B, num_patches, patch_size)
     return x
-

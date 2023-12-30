@@ -5,6 +5,7 @@ from ast_torch.attention import Attention
 from ast_torch.blocks import patch_split_overlap
 from zeta.nn import PositionalEmbedding
 
+
 class ASTransformer(nn.Module):
     """
     ASTransformer is a transformer-based model for AST (Abstract Syntax Tree) processing.
@@ -120,10 +121,9 @@ class ASTransformer(nn.Module):
                     dropout=dropout,
                 )
             )
-            
-        self.pos_emb =  PositionalEmbedding(seqlen, dim)
-        
-        
+
+        self.pos_emb = PositionalEmbedding(seqlen, dim)
+
     def forward(self, x: Tensor) -> Tensor:
         """
         Forward pass of the ASTransformer.
@@ -147,8 +147,23 @@ class ASTransformer(nn.Module):
         ):
             x = attn_block(x) + x
             x = ffn_block(x) + x
-            
+
         # Projecting to output
         x = self.to_out(x)
 
         return x
+
+
+import torch
+from ast_torch.model import ASTransformer
+
+# Create dummy data
+x = torch.randn(2, 16)
+
+# Initialize model
+model = ASTransformer(
+    dim=4, seqlen=16, dim_head=4, heads=4, depth=2, patch_size=4
+)
+
+# Run model and print output shape
+print(model(x).shape)
