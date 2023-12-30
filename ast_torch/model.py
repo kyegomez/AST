@@ -124,7 +124,7 @@ class ASTransformer(nn.Module):
         self.pos_emb =  PositionalEmbedding(seqlen, dim)
         
         
-    def forward(self, x: Tensor, mask: Tensor = None) -> Tensor:
+    def forward(self, x: Tensor) -> Tensor:
         """
         Forward pass of the ASTransformer.
 
