@@ -57,7 +57,6 @@ class ASTransformer(nn.Module):
         causal: bool = False,
         num_null_kv: int = 0,
         patch_size: int = 1,
-        norm_context: bool = False,
         flash: bool = False,
         *args,
         **kwargs,
@@ -73,30 +72,13 @@ class ASTransformer(nn.Module):
         self.causal = causal
         self.num_null_kv = num_null_kv
         self.patch_size = patch_size
-        self.norm_context = norm_context
         self.flash = flash
 
-        self.to_patch = nn.Linear(dim, dim_head * heads, bias=False)
-        # self.to_out = nn.Linear(dim_head * heads, dim, bias=False)
         self.to_out = nn.Linear(dim, dim, bias=False)
         self.to_1d_embeddings = nn.Linear(dim, dim)
         self.ff_expansion_ration = dim * ff_mult
-        self.attn = Attention(
-            dim=dim,
-            causal=causal,
-            dim_head=dim_head,
-            heads=heads,
-            num_null_kv=num_null_kv,
-            dropout=dropout,
-            flash=flash,
-            *args,
-        )
-        self.ffn = SimpleFeedForward(
-            dim=dim,
-            hidden_dim=self.ff_expansion_ration,
-            dropout=dropout,
-        )
-
+        
+        # Layers
         self.attn_layers = nn.ModuleList([])
         self.ffn_layers = nn.ModuleList([])
 
